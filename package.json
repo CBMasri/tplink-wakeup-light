@@ -1,0 +1,16 @@
+{
+  "name": "tplink-wakeup-light",
+  "version": "1.0.0",
+  "description": "A simple server to turn a TP-Link Smart Bulb (LB120/LB130) into a wake-up light.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Carl Masri <cmasri@uvic.ca>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.15.4",
+    "request": "^2.82.0",
+    "uuid": "^3.1.0"
+  }
+}

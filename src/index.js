@@ -2,30 +2,24 @@ const express = require('express');
 const request = require('request');
 const uuid = require('uuid/v4');
 
-const TP_LINK_USER = process.env.TP_LINK_USER;
-const TP_LINK_PASS = process.env.TP_LINK_PASS;
-const TP_LINK_TERM = process.env.TP_LINK_TERM || uuid();
-const TP_LINK_ALIAS = process.env.TP_LINK_ALIAS;
-
 const TPLINK_PORTAL = 'https://wap.tplinkcloud.com';
 
 class App {
-
-  constructor() {
-    this.appServerUrl = null;
-    this.deviceList = null;
-  }
 
   getToken(username, password, term) {
     console.log('getToken()');
 
     return new Promise((resolve, reject) => {
+      if (!username || !password || !term) {
+        reject('One or more input parameters are missing');
+      }
+
       // Params for the login request
       const params = {
         appType: 'Kasa_Android',
-        cloudUserName: TP_LINK_USER,
-        cloudPassword: TP_LINK_PASS,
-        terminalUUID: TP_LINK_TERM
+        cloudUserName: username,
+        cloudPassword: password,
+        terminalUUID: term
       };
 
       const payload = {
@@ -76,7 +70,7 @@ class App {
     });
   }
 
-  getDevice(deviceList) {
+  getDevice(deviceList, alias) {
     console.log('getDevice()');
 
     return new Promise((resolve, reject) => {
@@ -84,12 +78,12 @@ class App {
         reject('Cannot get device without a valid list of devices');
       }
       for (let i = 0; i < deviceList.length; i++) {
-        if (deviceList[i].alias === TP_LINK_ALIAS) {
-          console.log('Device for alias %s found', TP_LINK_ALIAS);
+        if (deviceList[i].alias === alias) {
+          console.log('Device for alias %s found', alias);
           resolve(deviceList[i]);
         }
       }
-      reject('No device id found for alias:', TP_LINK_ALIAS);
+      reject('No device id found for alias:', alias);
     });
   }
 
@@ -146,18 +140,38 @@ class Bulb {
 }
 
 (function() {
+  const user = process.env.TPLINK_USER;
+  const pass = process.env.TPLINK_PASS;
+  const termId = process.env.TPLINK_TERM || uuid();
+
+  // Alias of device to search for
+  // This is the same name that appears in the 'Kasa' app
+  const alias = process.env.TPLINK_ALIAS;
+
+  if (!user || !pass) {
+    console.log('Error: Missing username or password');
+    console.log('Please make sure the TPLINK_USER and TPLINK_PASS environment variables are set');
+    process.exit(1);
+  }
+
+  if (!alias) {
+    console.log('Error: Missing device alias');
+    console.log('Please make sure that the TPLINK_ALIAS environment variable is set');
+    process.exit(1);
+  }
+
   app = new App();
 
   let myToken;
   let myDevice;
   
-  app.getToken()
+  app.getToken(user, pass, termId)
     .then(token => {
       myToken = token;
       return app.getDeviceList(token);
     })
     .then(deviceList => {
-      return app.getDevice(deviceList);
+      return app.getDevice(deviceList, alias);
     })
     .then(device => {
       myDevice = device;

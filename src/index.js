@@ -95,32 +95,33 @@ class App {
         reject('Cannot turn on lamp without device and auth token');
       }
 
+      let command = {
+        'smartlife.iot.smartbulb.lightingservice': {
+          'transition_light_state': {
+            'on_off': 0,
+            'transition_period': 1,
+            'color_temp': 2700,
+            'brightness': 15
+          } 
+        }
+      }
+
       let params = {
         deviceId: device.deviceId,
-        requestData: {
-          'smartlife.iot.smartbulb.lightingservice': {
-            'transition_light_state': {
-              'on_off': '1',
-              'brightness': '50',
-              'hue': '0',
-              'saturation': '0'
-            } 
-          }
-        }
+        requestData: JSON.stringify(command)
       }
 
       let payload = {
         method: 'passthrough',
-        params: JSON.stringify(params)
+        params: params
       }
-
-      console.dir(payload);
 
       request.post({
         headers: {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache'
         },
+        qs: { token: token },
         url: device.appServerUrl,
         body: JSON.stringify(payload)
       }, function(error, response, body) {

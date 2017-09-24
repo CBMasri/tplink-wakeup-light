@@ -1,19 +1,20 @@
 const request = require('request');
 
-class Bulb {
+class SmartBulb {
 
   constructor(token, device) {
     this.token = token;
     this.device = device;
   }
 
-  setState(on_off, transition, temp, brightness) {
+  setState(power, transition, temp, brightness) {
     return new Promise((resolve, reject) => {
       let command = {
         'smartlife.iot.smartbulb.lightingservice': {
           'transition_light_state': {
-            'on_off': on_off ? 1 : 0,
-            'transition_period': transition,
+            'ignore_default': 1,
+            'on_off': power ? 1 : 0,
+            'transition_period': transition * 1000,
             'color_temp': temp,
             'brightness': brightness
           } 
@@ -46,4 +47,4 @@ class Bulb {
   }
 }
 
-module.exports = Bulb;
+module.exports = SmartBulb;

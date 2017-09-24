@@ -1,11 +1,11 @@
 const uuid = require('uuid/v4');
 
 const TPLinkService = require('./tplink-service.js');
-const Bulb = require('./bulb.js');
+const SmartBulb = require('./smartbulb.js');
 
 const user = process.env.TPLINK_USER;
 const pass = process.env.TPLINK_PASS;
-const termId = process.env.TPLINK_TERM || uuid();
+const term = process.env.TPLINK_TERM || uuid();
 
 // Alias of device to search for
 // This is the same name that appears in the 'Kasa' app
@@ -25,23 +25,23 @@ if (!alias) {
 
 let service = new TPLinkService();
 
-let myToken;
-let myBulb;
+let authToken;
+let bulb;
 
-service.authenticate(user, pass, termId)
+service.authenticate(user, pass, term)
   .then(token => {
-    myToken = token;
+    authToken = token;
     return service.getDeviceList(token);
   })
   .then(deviceList => {
     return service.getDevice(deviceList, alias);
   })
   .then(device => {
-    myBulb = new Bulb(myToken, device);
-    // on_off, transition (ms), temp, brightness
-    return myBulb.setState(true, 100000, 2700, 50);
+    bulb = new SmartBulb(authToken, device);
+    // power, transition (s), temp, brightness
+    return bulb.setState(false, 1, 2700, 20);
   })
-  .then(result => {
-    console.log(result);
+  .then(response => {
+    console.log(response);
   })
   .catch(err => console.log(err))

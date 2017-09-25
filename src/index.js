@@ -60,10 +60,10 @@ service.authenticate(user, pass, term)
     let temp = (maxTemp - minTemp) / 5;
     let brightness = maxBrightness / 5;
 
-    let nextTemp = minTemp + temp;
-    let nextBrightness = minBrightness + brightness;
+    let currentTemp = minTemp + temp;
+    let currentBrightness = minBrightness + brightness;
 
-    return bulb.setState(true, transition, nextTemp, nextBrightness)
+    return bulb.setState(true, transition, currentTemp, currentBrightness)
       .then(response => {
         console.log(response);
         currentTemp += temp;
@@ -71,16 +71,7 @@ service.authenticate(user, pass, term)
         return sleep(transition);
       })
       .then(() => {
-        return bulb.setState(true, transition, nextTemp, nextBrightness)
-      })
-      .then(response => {
-        console.log(response);
-        currentTemp += temp;
-        currentBrightness += brightness;
-        return sleep(transition);
-      })
-      .then(() => {
-        return bulb.setState(true, transition, nextTemp, nextBrightness)
+        return bulb.setState(true, transition, currentTemp, currentBrightness)
       })
       .then(response => {
         console.log(response);
@@ -89,7 +80,7 @@ service.authenticate(user, pass, term)
         return sleep(transition);
       })
       .then(() => {
-        return bulb.setState(true, transition, nextTemp, nextBrightness)
+        return bulb.setState(true, transition, currentTemp, currentBrightness)
       })
       .then(response => {
         console.log(response);
@@ -98,7 +89,16 @@ service.authenticate(user, pass, term)
         return sleep(transition);
       })
       .then(() => {
-        return bulb.setState(true, transition, nextTemp, nextBrightness)
+        return bulb.setState(true, transition, currentTemp, currentBrightness)
+      })
+      .then(response => {
+        console.log(response);
+        currentTemp += temp;
+        currentBrightness += brightness;c
+        return sleep(transition);
+      })
+      .then(() => {
+        return bulb.setState(true, transition, currentTemp, currentBrightness)
       })
       .then(response => console.log(response))
   })

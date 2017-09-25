@@ -14,10 +14,10 @@ class SmartBulb {
           'transition_light_state': {
             'ignore_default': 1,
             'on_off': power ? 1 : 0,
-            'transition_period': transition * 1000,
+            'transition_period': transition,
             'color_temp': temp,
             'brightness': brightness
-          } 
+          }
         }
       }
 

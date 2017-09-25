@@ -23,6 +23,15 @@ if (!alias) {
   process.exit(1);
 }
 
+// Number of minutes until light
+// is full brightness
+const timeToWake = 10;
+
+const minTemp = 2700;
+const maxTemp = 5000;
+const minBrightness = 0;
+const maxBrightness = 100;
+
 let service = new TPLinkService();
 
 let authToken;
@@ -38,10 +47,63 @@ service.authenticate(user, pass, term)
   })
   .then(device => {
     bulb = new SmartBulb(authToken, device);
-    // power, transition (s), temp, brightness
-    return bulb.setState(false, 1, 2700, 20);
+    return bulb.setState(true, 10000, minTemp, minBrightness);
   })
   .then(response => {
     console.log(response);
+    return sleep(10000);
+  })
+  .then(() => {
+    console.log(`Light will be fully bright in ${timeToWake} minutes.`);
+
+    let transition = timeToWake * 60 * 1000 / 5;  // 5 equal time segments (ms)
+    let temp = (maxTemp - minTemp) / 5;
+    let brightness = maxBrightness / 5;
+
+    let nextTemp = minTemp + temp;
+    let nextBrightness = minBrightness + brightness;
+
+    return bulb.setState(true, transition, nextTemp, nextBrightness)
+      .then(response => {
+        console.log(response);
+        currentTemp += temp;
+        currentBrightness += brightness;
+        return sleep(transition);
+      })
+      .then(() => {
+        return bulb.setState(true, transition, nextTemp, nextBrightness)
+      })
+      .then(response => {
+        console.log(response);
+        currentTemp += temp;
+        currentBrightness += brightness;
+        return sleep(transition);
+      })
+      .then(() => {
+        return bulb.setState(true, transition, nextTemp, nextBrightness)
+      })
+      .then(response => {
+        console.log(response);
+        currentTemp += temp;
+        currentBrightness += brightness;
+        return sleep(transition);
+      })
+      .then(() => {
+        return bulb.setState(true, transition, nextTemp, nextBrightness)
+      })
+      .then(response => {
+        console.log(response);
+        currentTemp += temp;
+        currentBrightness += brightness;
+        return sleep(transition);
+      })
+      .then(() => {
+        return bulb.setState(true, transition, nextTemp, nextBrightness)
+      })
+      .then(response => console.log(response))
   })
   .catch(err => console.log(err))
+
+function sleep(n) {
+  return new Promise(resolve => setTimeout(resolve, n));
+}

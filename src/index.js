@@ -3,6 +3,8 @@ const uuid = require('uuid/v4');
 const TPLinkService = require('./tplink-service.js');
 const SmartBulb = require('./smartbulb.js');
 
+const settings = require('./default.json');
+
 const user = process.env.TPLINK_USER;
 const pass = process.env.TPLINK_PASS;
 const term = process.env.TPLINK_TERM || uuid();
@@ -23,14 +25,12 @@ if (!alias) {
   process.exit(1);
 }
 
-// Number of minutes until light
-// is full brightness
-const timeToWake = 10;
-
-const minTemp = 2700;
-const maxTemp = 5000;
-const minBrightness = 0;
-const maxBrightness = 100;
+// Number of minutes until light is full brightness
+const timeToWake = settings.timeToWake || 10;
+const minTemp = settings.minTemp || 2700;
+const maxTemp = settings.maxTemp || 5000;
+const minBrightness = settings.minBrightness || 0;
+const maxBrightness = settings.maxBrightness || 100;
 
 let service = new TPLinkService();
 
@@ -50,11 +50,11 @@ service.authenticate(user, pass, term)
     return bulb.setState(true, 10000, minTemp, minBrightness);
   })
   .then(response => {
-    console.log(response);
-    return sleep(10000);
+    log(response);
+    return sleep(120000);   // sleep two minutes
   })
   .then(() => {
-    console.log(`Light will be fully bright in ${timeToWake} minutes.`);
+    console.log(`Light will be fully bright in ${timeToWake} minutes`);
 
     let transition = timeToWake * 60 * 1000 / 5;  // 5 equal time segments (ms)
     let temp = (maxTemp - minTemp) / 5;
@@ -65,7 +65,7 @@ service.authenticate(user, pass, term)
 
     return bulb.setState(true, transition, currentTemp, currentBrightness)
       .then(response => {
-        console.log(response);
+        log(response);
         currentTemp += temp;
         currentBrightness += brightness;
         return sleep(transition);
@@ -74,7 +74,7 @@ service.authenticate(user, pass, term)
         return bulb.setState(true, transition, currentTemp, currentBrightness)
       })
       .then(response => {
-        console.log(response);
+        log(response);
         currentTemp += temp;
         currentBrightness += brightness;
         return sleep(transition);
@@ -83,7 +83,7 @@ service.authenticate(user, pass, term)
         return bulb.setState(true, transition, currentTemp, currentBrightness)
       })
       .then(response => {
-        console.log(response);
+        log(response);
         currentTemp += temp;
         currentBrightness += brightness;
         return sleep(transition);
@@ -92,18 +92,25 @@ service.authenticate(user, pass, term)
         return bulb.setState(true, transition, currentTemp, currentBrightness)
       })
       .then(response => {
-        console.log(response);
+        log(response);
         currentTemp += temp;
-        currentBrightness += brightness;c
+        currentBrightness += brightness;
         return sleep(transition);
       })
       .then(() => {
         return bulb.setState(true, transition, currentTemp, currentBrightness)
       })
-      .then(response => console.log(response))
+      .then(response => log(response))
   })
   .catch(err => console.log(err))
 
 function sleep(n) {
   return new Promise(resolve => setTimeout(resolve, n));
+}
+
+function log(response) {
+  let responseData = JSON.parse(response.result.responseData);
+  let state = responseData['smartlife.iot.smartbulb.lightingservice'];
+  console.log(state);
+  return state;
 }

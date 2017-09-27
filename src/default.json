@@ -1,0 +1,7 @@
+{
+  "timeToWake": 10,
+  "minTemp": 2700,
+  "maxTemp": 5000,
+  "minBrightness": 0,
+  "maxBrightness": 100
+}

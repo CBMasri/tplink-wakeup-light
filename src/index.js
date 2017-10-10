@@ -54,8 +54,6 @@ service.authenticate(user, pass, term)
     return sleep(120000);   // sleep two minutes
   })
   .then(() => {
-    console.log(`Light will be fully bright in ${timeToWake} minutes`);
-
     let transition = timeToWake * 60 * 1000 / 5;  // 5 equal time segments (ms)
     let temp = (maxTemp - minTemp) / 5;
     let brightness = maxBrightness / 5;
@@ -104,13 +102,29 @@ service.authenticate(user, pass, term)
   })
   .catch(err => console.log(err))
 
+/**
+ * Sleeps for a given period of time.
+ * @param {number} n - Number of ms to sleep
+ * @returns {promise}
+ */
 function sleep(n) {
   return new Promise(resolve => setTimeout(resolve, n));
 }
 
+/**
+ * Logs the bulb state to console.
+ * @param {object} response - The response object
+ * @returns {object}
+ */
 function log(response) {
-  let responseData = JSON.parse(response.result.responseData);
-  let state = responseData['smartlife.iot.smartbulb.lightingservice'];
-  console.log(state);
+  let state;
+  if (!response.error_code) {
+    let timestamp = new Date().toTimeString().split(' ')[0];
+    let responseData = JSON.parse(response.result.responseData);
+    state = responseData['smartlife.iot.smartbulb.lightingservice'].transition_light_state;
+    console.log(`[${timestamp}] info: ${JSON.stringify(state)}`);
+  } else {
+    console.log(response);
+  }
   return state;
 }
